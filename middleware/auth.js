@@ -1,7 +1,7 @@
 /** Middleware for handling req authorization for routes. */
 
-const jwt = require('jsonwebtoken');
-const { SECRET_KEY } = require('../config');
+const jwt = require("jsonwebtoken");
+const { SECRET_KEY } = require("../config");
 
 /** Authorization Middleware: Requires user is logged in. */
 
@@ -10,7 +10,7 @@ function requireLogin(req, res, next) {
     if (req.curr_username) {
       return next();
     } else {
-      return next({ status: 401, message: 'Unauthorized' });
+      return next({ status: 401, message: "Unauthorized" });
     }
   } catch (err) {
     return next(err);
@@ -21,10 +21,15 @@ function requireLogin(req, res, next) {
 
 function requireAdmin(req, res, next) {
   try {
+    console.log(req.curr_username);
+    console.log(req.curr_admin);
+    console.log("try");
     if (req.curr_admin) {
       return next();
     } else {
-      return next({ status: 401, message: 'Unauthorized' });
+      console.log(req.curr_username);
+      console.log(req.curr_admin);
+      return next({ status: 401, message: "Unauthorized need to be an admin" });
     }
   } catch (err) {
     return next(err);
@@ -47,8 +52,10 @@ function requireAdmin(req, res, next) {
 function authUser(req, res, next) {
   try {
     const token = req.body._token || req.query._token;
+
     if (token) {
-      let payload = jwt.decode(token);
+      // Fixes BUG #6
+      let payload = jwt.verify(token, SECRET_KEY);
       req.curr_username = payload.username;
       req.curr_admin = payload.admin;
     }
@@ -62,5 +69,5 @@ function authUser(req, res, next) {
 module.exports = {
   requireLogin,
   requireAdmin,
-  authUser
+  authUser,
 };
